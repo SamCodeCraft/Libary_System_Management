@@ -1,64 +1,73 @@
-# library/transaction_management.py
+# models/transaction_management.py
+import sqlite3
 from datetime import datetime, timedelta
-from sqlalchemy.orm.exc import NoResultFound
-from database import Session
-from library.models import Book, User, Transaction
 
-def borrow_book():
-    """Borrow a book"""
-    session = Session()
-    user_email = input("Enter your email: ")
-    book_id = int(input("Enter book ID to borrow: "))
+DATABASE = 'library.db'
 
-    try:
-        user = session.query(User).filter_by(email=user_email).one()
-        book = session.query(Book).filter_by(id=book_id).one()
+def get_connection():
+    """Establish a connection to the SQLite database"""
+    conn = sqlite3.connect(DATABASE)
+    return conn
 
-        if book.available_copies > 0:
-            borrow_date = datetime.now().date()
-            due_date = borrow_date + timedelta(days=14)  # 2 weeks borrowing period
-            transaction = Transaction(book=book, user=user, borrow_date=borrow_date, due_date=due_date)
-            book.available_copies -= 1
+# Create
+def add_transaction(book_id, user_id, borrow_date, due_date):
+    """Add a new transaction to the database"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO transactions (book_id, user_id, borrow_date, due_date)
+        VALUES (?, ?, ?, ?)
+    ''', (book_id, user_id, borrow_date, due_date))
+    conn.commit()
+    conn.close()
 
-            session.add(transaction)
-            session.commit()
-            print(f"Book '{book.title}' borrowed successfully. Due date: {due_date}")
-        else:
-            print("No available copies to borrow.")
-    except NoResultFound:
-        print("User or book not found.")
-    session.close()
+# Read
+def get_transaction(transaction_id):
+    """Retrieve a transaction from the database by its ID"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM transactions WHERE id = ?', (transaction_id,))
+    transaction = cursor.fetchone()
+    conn.close()
+    return transaction
 
-def return_book():
-    """Return a borrowed book"""
-    session = Session()
-    transaction_id = int(input("Enter transaction ID: "))
+def get_all_transactions():
+    """Retrieve all transactions from the database"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM transactions')
+    transactions = cursor.fetchall()
+    conn.close()
+    return transactions
 
-    try:
-        transaction = session.query(Transaction).filter_by(id=transaction_id).one()
-        if not transaction.return_date:
-            transaction.return_date = datetime.now().date()
-            days_overdue = (transaction.return_date - transaction.due_date).days
-            transaction.fine = days_overdue * 0.5 if days_overdue > 0 else 0  # $0.5 per day fine
+# Update
+def update_transaction(transaction_id, return_date=None, fine=None):
+    """Update the details of a transaction"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = 'UPDATE transactions SET '
+    params = []
 
-            book = transaction.book
-            book.available_copies += 1
+    if return_date is not None:
+        query += 'return_date = ?, '
+        params.append(return_date)
+    if fine is not None:
+        query += 'fine = ?, '
+        params.append(fine)
 
-            session.commit()
-            print(f"Book '{book.title}' returned successfully. Fine: ${transaction.fine:.2f}")
-        else:
-            print("Book already returned.")
-    except NoResultFound:
-        print("Transaction not found.")
-    session.close()
+    query = query.rstrip(', ')
+    query += ' WHERE id = ?'
+    params.append(transaction_id)
 
-def view_transactions():
-    """View all transactions"""
-    session = Session()
-    transactions = session.query(Transaction).all()
-    if transactions:
-        for transaction in transactions:
-            print(f"ID: {transaction.id}, Book: '{transaction.book.title}', User: {transaction.user.name}, Borrow Date: {transaction.borrow_date}, Due Date: {transaction.due_date}, Return Date: {transaction.return_date}, Fine: ${transaction.fine}")
-    else:
-        print("No transactions found.")
-    session.close()
+    cursor.execute(query, tuple(params))
+    conn.commit()
+    conn.close()
+
+# Delete
+def delete_transaction(transaction_id):
+    """Delete a transaction from the database by its ID"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM transactions WHERE id = ?', (transaction_id,))
+    conn.commit()
+    conn.close()

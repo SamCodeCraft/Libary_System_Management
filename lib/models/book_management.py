@@ -1,36 +1,79 @@
-# library/book_management.py
-from sqlalchemy.orm.exc import NoResultFound
-from database import Session
-from library.models import Book, Author
+# models/book_management.py
+import sqlite3
+from datetime import datetime
 
-def add_book():
-    """Add a new book"""
-    session = Session()
-    title = input("Enter book title: ")
-    author_name = input("Enter author name: ")
-    category = input("Enter book category: ")
-    available_copies = int(input("Enter number of available copies: "))
+DATABASE = 'library.db'
 
-    # Check if author exists, otherwise add author
-    try:
-        author = session.query(Author).filter_by(name=author_name).one()
-    except NoResultFound:
-        author = Author(name=author_name)
-        session.add(author)
-        session.commit()
+def get_connection():
+    """Establish a connection to the SQLite database"""
+    conn = sqlite3.connect(DATABASE)
+    return conn
 
-    book = Book(title=title, author_id=author.id, category=category, available_copies=available_copies)
-    session.add(book)
-    session.commit()
-    print(f"Book {title} added successfully.")
-    session.close()
+# Create
+def add_book(title, author_id, category, available_copies):
+    """Add a new book to the database"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO books (title, author_id, category, available_copies)
+        VALUES (?, ?, ?, ?)
+    ''', (title, author_id, category, available_copies))
+    conn.commit()
+    conn.close()
 
-def edit_book():
-    """Edit a book's details"""
-    session = Session()
-    book_id = int(input("Enter book ID to edit: "))
-    try:
-        book = session.query(Book).filter_by(id=book_id).one()
-        book.title = input(f"Enter new title (current: {book.title}): ") or book.title
-        author_name = input(f"Enter new author name (current: {book.author.name}): ") or book.author.name
-        book.category = input(f"Enter new category
+# Read
+def get_book(book_id):
+    """Retrieve a book from the database by its ID"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM books WHERE id = ?', (book_id,))
+    book = cursor.fetchone()
+    conn.close()
+    return book
+
+def get_all_books():
+    """Retrieve all books from the database"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM books')
+    books = cursor.fetchall()
+    conn.close()
+    return books
+
+# Update
+def update_book(book_id, title=None, author_id=None, category=None, available_copies=None):
+    """Update the details of a book"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = 'UPDATE books SET '
+    params = []
+
+    if title is not None:
+        query += 'title = ?, '
+        params.append(title)
+    if author_id is not None:
+        query += 'author_id = ?, '
+        params.append(author_id)
+    if category is not None:
+        query += 'category = ?, '
+        params.append(category)
+    if available_copies is not None:
+        query += 'available_copies = ?, '
+        params.append(available_copies)
+
+    query = query.rstrip(', ')
+    query += ' WHERE id = ?'
+    params.append(book_id)
+
+    cursor.execute(query, tuple(params))
+    conn.commit()
+    conn.close()
+
+# Delete
+def delete_book(book_id):
+    """Delete a book from the database by its ID"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM books WHERE id = ?', (book_id,))
+    conn.commit()
+    conn.close()
