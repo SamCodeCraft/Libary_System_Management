@@ -1,20 +1,5 @@
-# connection.py
-import sqlite3
+import os
 
-def get_connection():
-    """Establish a connection to the SQLite database"""
-    conn = sqlite3.connect('library.db')
-    return conn
-
-# Example usage (optional)
-if __name__ == "__main__":
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    # Query the database
-    cursor.execute('SELECT * FROM users')
-    users = cursor.fetchall()
-    for user in users:
-        print(user)
-    
-    conn.close()
+# Set the path to the database file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, 'library.db')
