@@ -23,7 +23,7 @@ class TestModels(unittest.TestCase):
         cursor.execute('DELETE FROM books')
         cursor.execute('DELETE FROM authors')
         connection.commit()
-        connection.close()
+        #connection.close()
 
     def test_user_crud(self):
         # Create User
@@ -46,7 +46,7 @@ class TestModels(unittest.TestCase):
 
     def test_book_crud(self):
         # Create Book
-        book = Book(title='1984', author='George Orwell', category='Dystopian')
+        book = Book(title='1984', author_id=1, category='Dystopian', available_copies=5)
         book.create()
         books = Book.get_all()
         self.assertEqual(len(books), 1)
@@ -88,7 +88,7 @@ class TestModels(unittest.TestCase):
         user.create()
         author = Author(name='George Orwell')
         author.create()
-        book = Book(title='1984', author_id=author.id, category='Dystopian', available_copies=5)
+        book = Book(title='1984', author_id=1, category='Dystopian', available_copies=5)
         book.create()
 
         # Create Transaction
