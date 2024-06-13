@@ -8,7 +8,7 @@ def create_tables():
     # Create Users table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             role TEXT NOT NULL
@@ -18,7 +18,7 @@ def create_tables():
     # Create Books table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS books (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             author_id INTEGER NOT NULL,
             category TEXT NOT NULL,
@@ -30,7 +30,7 @@ def create_tables():
     # Create Authors table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS authors (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL
         )
     """)
@@ -38,7 +38,7 @@ def create_tables():
     # Create Transactions table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             book_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
             borrow_date DATE NOT NULL,

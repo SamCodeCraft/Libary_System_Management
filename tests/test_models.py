@@ -1,94 +1,90 @@
 import unittest
-from models.User import User
-from models.Book import Book
-from models.Author import Author
-from models.Transaction import Transaction
+from models.author import Author
+from models.book import Book
+from models.transaction import Transaction
+from models.user import User
 
-class TestModels(unittest.TestCase):
-    def test_user_operations(self):
-        # Test User CRUD operations
-        # Add a user
-        User().add_user("John Doe", "john@example.com", "patron")
-        user = User().get_user(1)
-        self.assertIsNotNone(user)
-        self.assertEqual(user[1], "John Doe")
-        self.assertEqual(user[2], "john@example.com")
-        self.assertEqual(user[3], "patron")
+class TestLibraryManagementSystem(unittest.TestCase):
 
-        # Update user information
-        User().update_user(1, name="Jane Doe", role="admin")
-        user = User().get_user(1)
-        self.assertIsNotNone(user)
-        self.assertEqual(user[1], "Jane Doe")
-        self.assertEqual(user[3], "admin")
+    def test_author_crud_operations(self):
+        author = Author()
+        author.add_author("Jane Austen")
+        result = author.get_all_authors()
+        self.assertIn(("Jane Austen",), result)
+        author_info = author.get_author(result[0][0])
+        self.assertEqual(author_info[1], "Jane Austen")
+        author.update_author(result[0][0], "Jane A.")
+        self.assertEqual(author.get_author(result[0][0])[1], "Jane A.")
+        author.delete_author(result[0][0])
+        self.assertEqual(author.get_all_authors(), [])
 
-        # Delete a user
-        User().delete_user(1)
-        user = User().get_user(1)
-        self.assertIsNone(user)
+    def test_book_crud_operations(self):
+        book = Book()
+        book.add_book("Pride and Prejudice", 1, "Fiction", 5)
+        result = book.get_all_books()
+        self.assertIn(("Pride and Prejudice", 1, "Fiction", 5), result)
+        book_info = book.get_book(result[0][0])
+        self.assertEqual(book_info[1], "Pride and Prejudice")
+        book.update_book(result[0][0], "Pride & Prejudice")
+        self.assertEqual(book.get_book(result[0][0])[1], "Pride & Prejudice")
+        book.delete_book(result[0][0])
+        self.assertEqual(book.get_all_books(), [])
 
-    def test_book_operations(self):
-        # Test Book CRUD operations
-        # Add a book
-        Book().add_book("Python Programming", 1, "Programming", 10)
-        book = Book().get_book(1)
-        self.assertIsNotNone(book)
-        self.assertEqual(book[1], "Python Programming")
-        self.assertEqual(book[2], 1)
-        self.assertEqual(book[3], "Programming")
-        self.assertEqual(book[4], 10)
+    def test_transaction_crud_operations(self):
+        transaction = Transaction()
+        transaction.add_transaction(1, 1, "2024-01-01", "2024-02-01")
+        result = transaction.get_all_transactions()
+        self.assertIn((1, 1, "2024-01-01", "2024-02-01", None, 0.0), result)
+        transaction_info = transaction.get_transaction(result[0][0])
+        self.assertEqual(transaction_info[1], 1)
+        transaction.update_transaction(result[0][0], return_date="2024-01-15", fine=10.0)
+        self.assertEqual(transaction.get_transaction(result[0][0])[4], "2024-01-15")
+        transaction.delete_transaction(result[0][0])
+        self.assertEqual(transaction.get_all_transactions(), [])
 
-        # Update book information
-        Book().update_book(1, title="Python Programming 101")
-        book = Book().get_book(1)
-        self.assertIsNotNone(book)
-        self.assertEqual(book[1], "Python Programming 101")
+    def test_user_crud_operations(self):
+        user = User()
+        user.add_user("John Doe", "john@example.com", "member")
+        result = user.get_all_users()
+        self.assertIn(("John Doe", "john@example.com", "member"), result)
+        user_info = user.get_user(result[0][0])
+        self.assertEqual(user_info[1], "John Doe")
+        user.update_user(result[0][0], email="john.doe@example.com")
+        self.assertEqual(user.get_user(result[0][0])[2], "john.doe@example.com")
+        user.delete_user(result[0][0])
+        self.assertEqual(user.get_all_users(), [])
 
-        # Delete a book
-        Book().delete_book(1)
-        book = Book().get_book(1)
-        self.assertIsNone(book)
+    def test_relationship_methods(self):
+        author = Author()
+        author.add_author("George Orwell")
+        author_id = author.get_all_authors()[0][0]
 
-    def test_author_operations(self):
-        # Test Author CRUD operations
-        # Add an author
-        Author().add_author("John Smith")
-        author = Author().get_author(1)
-        self.assertIsNotNone(author)
-        self.assertEqual(author[1], "John Smith")
+        book = Book()
+        book.add_book("1984", author_id, "Dystopian", 10)
+        book_id = book.get_all_books()[0][0]
 
-        # Update author information
-        Author().update_author(1, "Jane Smith")
-        author = Author().get_author(1)
-        self.assertIsNotNone(author)
-        self.assertEqual(author[1], "Jane Smith")
+        user = User()
+        user.add_user("Alice", "alice@example.com", "member")
+        user_id = user.get_all_users()[0][0]
 
-        # Delete an author
-        Author().delete_author(1)
-        author = Author().get_author(1)
-        self.assertIsNone(author)
+        transaction = Transaction()
+        transaction.add_transaction(book_id, user_id, "2024-01-01", "2024-02-01")
+        transaction_id = transaction.get_all_transactions()[0][0]
 
-    def test_transaction_operations(self):
-        # Test Transaction CRUD operations
-        # Add a transaction
-        Transaction().add_transaction(1, 1, "2024-06-12", "2024-07-12")
-        transaction = Transaction().get_transaction(1)
-        self.assertIsNotNone(transaction)
-        self.assertEqual(transaction[1], 1)
-        self.assertEqual(transaction[2], 1)
-        self.assertEqual(transaction[3], "2024-06-12")
-        self.assertEqual(transaction[4], "2024-07-12")
+        books_by_author = author.get_books_by_author(author_id)
+        self.assertEqual(books_by_author[0][1], "1984")
 
-        # Update transaction information
-        Transaction().update_transaction(1, due_date="2024-07-15")
-        transaction = Transaction().get_transaction(1)
-        self.assertIsNotNone(transaction)
-        self.assertEqual(transaction[4], "2024-07-15")
+        author_by_book = book.get_author_by_book(book_id)
+        self.assertEqual(author_by_book[1], "George Orwell")
 
-        # Delete a transaction
-        Transaction().delete_transaction(1)
-        transaction = Transaction().get_transaction(1)
-        self.assertIsNone(transaction)
+        user_by_transaction = transaction.get_user_by_transaction(transaction_id)
+        self.assertEqual(user_by_transaction[1], "Alice")
+
+        book_by_transaction = transaction.get_book_by_transaction(transaction_id)
+        self.assertEqual(book_by_transaction[1], "1984")
+
+        transactions_by_user = user.get_transactions_by_user(user_id)
+        self.assertEqual(transactions_by_user[0][1], book_id)
 
 if __name__ == '__main__':
     unittest.main()

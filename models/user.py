@@ -2,7 +2,7 @@ import sqlite3
 from connection import DATABASE
 
 class User:
-    def __init__(self, id, name, email, role):
+    def __init__(self, id=None, name=None, email=None, role=None):
         self._id = id
         self._name = name
         self._email = email
@@ -54,3 +54,17 @@ class User:
         cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
         conn.commit()
         conn.close()
+
+    # Retrieve transactions by user
+    def get_transactions_by_user(self, user_id):
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT transactions.id, transactions.book_id, transactions.borrow_date, transactions.due_date, transactions.return_date, transactions.fine
+            FROM transactions
+            JOIN users ON transactions.user_id = users.id
+            WHERE users.id = ?
+        """, (user_id,))
+        transactions = cursor.fetchall()
+        conn.close()
+        return transactions

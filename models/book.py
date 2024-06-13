@@ -2,7 +2,7 @@ import sqlite3
 from connection import DATABASE
 
 class Book:
-    def __init__(self, id, title, author_id, category, available_copies):
+    def __init__(self, id=None, title=None, author_id=None, category=None, available_copies=None):
         self._id = id
         self._title = title
         self._author_id = author_id
@@ -58,3 +58,17 @@ class Book:
         cursor.execute("DELETE FROM books WHERE id = ?", (book_id,))
         conn.commit()
         conn.close()
+
+    # Retrieve author by book
+    def get_author_by_book(self, book_id):
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT authors.id, authors.name
+            FROM authors
+            JOIN books ON authors.id = books.author_id
+            WHERE books.id = ?
+        """, (book_id,))
+        author = cursor.fetchone()
+        conn.close()
+        return author
