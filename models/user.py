@@ -1,70 +1,61 @@
 import sqlite3
-from connection import DATABASE
+from connection import get_db_connection
 
 class User:
     def __init__(self, id=None, name=None, email=None, role=None):
-        self._id = id
-        self._name = name
-        self._email = email
-        self._role = role
+        self.id = id
+        self.name = name
+        self.email = email
+        self.role = role
 
-    # Create a new user in the database
-    def add_user(self, name, email, role):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO users (name, email, role) VALUES (?, ?, ?)", (name, email, role))
-        conn.commit()
-        conn.close()
+    @classmethod
+    def create_table(cls):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                role TEXT NOT NULL
+            )
+        ''')
+        connection.commit()
+        connection.close()
 
-    # Retrieve a user by their ID
-    def get_user(self, user_id):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-        user = cursor.fetchone()
-        conn.close()
-        return user
+    def create(self):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('''
+            INSERT INTO users (name, email, role) VALUES (?, ?, ?)
+        ''', (self.name, self.email, self.role))
+        connection.commit()
+        connection.close()
 
-    # Retrieve all users from the database
-    def get_all_users(self):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users")
+    @classmethod
+    def get_all(cls):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('SELECT * FROM users')
         users = cursor.fetchall()
-        conn.close()
-        return users
+        connection.close()
+        return [cls(*user) for user in users]
 
-    # Update user information
-    def update_user(self, user_id, name=None, email=None, role=None):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        if name:
-            cursor.execute("UPDATE users SET name = ? WHERE id = ?", (name, user_id))
-        if email:
-            cursor.execute("UPDATE users SET email = ? WHERE id = ?", (email, user_id))
-        if role:
-            cursor.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
-        conn.commit()
-        conn.close()
+    @classmethod
+    def find_by_id(cls, id):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('SELECT * FROM users WHERE id = ?', (id,))
+        user = cursor.fetchone()
+        connection.close()
+        if user:
+            return cls(*user)
+        return None
 
-    # Delete a user from the database
-    def delete_user(self, user_id):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
-        conn.commit()
-        conn.close()
-
-    # Retrieve transactions by user
-    def get_transactions_by_user(self, user_id):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT transactions.id, transactions.book_id, transactions.borrow_date, transactions.due_date, transactions.return_date, transactions.fine
-            FROM transactions
-            JOIN users ON transactions.user_id = users.id
-            WHERE users.id = ?
-        """, (user_id,))
-        transactions = cursor.fetchall()
-        conn.close()
-        return transactions
+    @classmethod
+    def delete(cls, id):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM users WHERE id = ?', (id,))
+        connection.commit()
+        connection.close()

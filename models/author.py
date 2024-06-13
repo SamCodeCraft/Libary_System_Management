@@ -1,63 +1,53 @@
 import sqlite3
-from connection import DATABASE
+from connection import get_db_connection
 
 class Author:
     def __init__(self, id=None, name=None):
-        self._id = id
-        self._name = name
+        self.id = id
+        self.name = name
 
     # Create a new author in the database
-    def add_author(self, name):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO authors (name) VALUES (?)", (name,))
-        conn.commit()
-        conn.close()
+    def create(self):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            'INSERT INTO authors (name) VALUES (?)',
+            (self.name,)
+        )
+        connection.commit()
+        self.id = cursor.lastrowid
+        connection.close()
 
-    # Retrieve an author by their ID
-    def get_author(self, author_id):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM authors WHERE id = ?", (author_id,))
-        author = cursor.fetchone()
-        conn.close()
-        return author
+    # Get all authors from the database
+    @classmethod
+    def get_all(cls):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('SELECT id, name FROM authors')
+        rows = cursor.fetchall()
+        connection.close()
+        return [cls(id=row[0], name=row[1]) for row in rows]
 
-    # Retrieve all authors from the database
-    def get_all_authors(self):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM authors")
-        authors = cursor.fetchall()
-        conn.close()
-        return authors
-
-    # Update author information
-    def update_author(self, author_id, name):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE authors SET name = ? WHERE id = ?", (name, author_id))
-        conn.commit()
-        conn.close()
+    # Find an author by ID
+    @classmethod
+    def find_by_id(cls, author_id):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('SELECT id, name FROM authors WHERE id = ?', (author_id,))
+        row = cursor.fetchone()
+        connection.close()
+        if row:
+            return cls(id=row[0], name=row[1])
+        return None
 
     # Delete an author from the database
-    def delete_author(self, author_id):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM authors WHERE id = ?", (author_id,))
-        conn.commit()
-        conn.close()
+    @classmethod
+    def delete(cls, author_id):
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute('DELETE FROM authors WHERE id = ?', (author_id,))
+        connection.commit()
+        connection.close()
 
-    # Retrieve books by author
-    def get_books_by_author(self, author_id):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT books.id, books.title, books.category, books.available_copies
-            FROM books
-            JOIN authors ON books.author_id = authors.id
-            WHERE authors.id = ?
-        """, (author_id,))
-        books = cursor.fetchall()
-        conn.close()
-        return books
+    def __str__(self):
+        return f'Author(id={self.id}, name={self.name})'

@@ -1,212 +1,199 @@
-# app.py
-
-from models.author import Author
-from models.book import Book
-from models.transaction import Transaction
+import sys
 from models.user import User
+from models.book import Book
+from models.author import Author
+from models.transaction import Transaction
+from setup import setup_database
 
-def main():
-    while True:
-        print("\nLibrary Management System")
-        print("1. Manage Authors")
-        print("2. Manage Books")
-        print("3. Manage Transactions")
-        print("4. Manage Users")
-        print("5. Exit")
-        
-        choice = input("Enter choice: ")
-        
-        if choice == '1':
-            manage_authors()
-        elif choice == '2':
-            manage_books()
-        elif choice == '3':
-            manage_transactions()
-        elif choice == '4':
-            manage_users()
-        elif choice == '5':
-            break
-        else:
-            print("Invalid choice. Please try again.")
+def main_menu():
+    print("\nLibrary Management System")
+    print("1. User Management")
+    print("2. Book Management")
+    print("3. Author Management")
+    print("4. Transaction Management")
+    print("5. Exit")
 
-def manage_authors():
-    author = Author()
-    
-    while True:
-        print("\nManage Authors")
-        print("1. Add Author")
-        print("2. View All Authors")
-        print("3. Update Author")
-        print("4. Delete Author")
-        print("5. View Books by Author")
-        print("6. Back")
-        
-        choice = input("Enter choice: ")
-        
-        if choice == '1':
-            name = input("Enter author name: ")
-            author.add_author(name)
-            print("Author added successfully.")
-        elif choice == '2':
-            authors = author.get_all_authors()
-            for a in authors:
-                print(f"ID: {a[0]}, Name: {a[1]}")
-        elif choice == '3':
-            author_id = input("Enter author ID: ")
-            name = input("Enter new name: ")
-            author.update_author(author_id, name)
-            print("Author updated successfully.")
-        elif choice == '4':
-            author_id = input("Enter author ID: ")
-            author.delete_author(author_id)
-            print("Author deleted successfully.")
-        elif choice == '5':
-            author_id = input("Enter author ID: ")
-            books = author.get_books_by_author(author_id)
-            for b in books:
-                print(f"ID: {b[0]}, Title: {b[1]}, Category: {b[2]}, Available Copies: {b[3]}")
-        elif choice == '6':
-            break
-        else:
-            print("Invalid choice. Please try again.")
+def user_menu():
+    print("\nUser Management")
+    print("1. Create User")
+    print("2. View All Users")
+    print("3. Find User by ID")
+    print("4. Delete User")
+    print("5. Back to Main Menu")
 
-def manage_books():
-    book = Book()
-    
-    while True:
-        print("\nManage Books")
-        print("1. Add Book")
-        print("2. View All Books")
-        print("3. Update Book")
-        print("4. Delete Book")
-        print("5. View Author by Book")
-        print("6. Back")
-        
-        choice = input("Enter choice: ")
-        
-        if choice == '1':
-            title = input("Enter book title: ")
-            author_id = input("Enter author ID: ")
-            category = input("Enter book category: ")
-            available_copies = int(input("Enter available copies: "))
-            book.add_book(title, author_id, category, available_copies)
-            print("Book added successfully.")
-        elif choice == '2':
-            books = book.get_all_books()
-            for b in books:
-                print(f"ID: {b[0]}, Title: {b[1]}, Author ID: {b[2]}, Category: {b[3]}, Available Copies: {b[4]}")
-        elif choice == '3':
-            book_id = input("Enter book ID: ")
-            title = input("Enter new title: ")
-            author_id = input("Enter new author ID: ")
-            category = input("Enter new category: ")
-            available_copies = int(input("Enter new available copies: "))
-            book.update_book(book_id, title, author_id, category, available_copies)
-            print("Book updated successfully.")
-        elif choice == '4':
-            book_id = input("Enter book ID: ")
-            book.delete_book(book_id)
-            print("Book deleted successfully.")
-        elif choice == '5':
-            book_id = input("Enter book ID: ")
-            author = book.get_author_by_book(book_id)
-            print(f"ID: {author[0]}, Name: {author[1]}")
-        elif choice == '6':
-            break
-        else:
-            print("Invalid choice. Please try again.")
+def book_menu():
+    print("\nBook Management")
+    print("1. Create Book")
+    print("2. View All Books")
+    print("3. Find Book by ID")
+    print("4. Delete Book")
+    print("5. Back to Main Menu")
 
-def manage_transactions():
-    transaction = Transaction()
-    
-    while True:
-        print("\nManage Transactions")
-        print("1. Add Transaction")
-        print("2. View All Transactions")
-        print("3. Update Transaction")
-        print("4. Delete Transaction")
-        print("5. View User by Transaction")
-        print("6. View Book by Transaction")
-        print("7. Back")
-        
-        choice = input("Enter choice: ")
-        
-        if choice == '1':
-            book_id = input("Enter book ID: ")
-            user_id = input("Enter user ID: ")
-            borrow_date = input("Enter borrow date (YYYY-MM-DD): ")
-            due_date = input("Enter due date (YYYY-MM-DD): ")
-            transaction.add_transaction(book_id, user_id, borrow_date, due_date)
-            print("Transaction added successfully.")
-        elif choice == '2':
-            transactions = transaction.get_all_transactions()
-            for t in transactions:
-                print(f"ID: {t[0]}, Book ID: {t[1]}, User ID: {t[2]}, Borrow Date: {t[3]}, Due Date: {t[4]}, Return Date: {t[5]}, Fine: {t[6]}")
-        elif choice == '3':
-            transaction_id = input("Enter transaction ID: ")
-            return_date = input("Enter return date (YYYY-MM-DD): ")
-            fine = float(input("Enter fine amount: "))
-            transaction.update_transaction(transaction_id, return_date=return_date, fine=fine)
-            print("Transaction updated successfully.")
-        elif choice == '4':
-            transaction_id = input("Enter transaction ID: ")
-            transaction.delete_transaction(transaction_id)
-            print("Transaction deleted successfully.")
-        elif choice == '5':
-            transaction_id = input("Enter transaction ID: ")
-            user = transaction.get_user_by_transaction(transaction_id)
-            print(f"ID: {user[0]}, Name: {user[1]}, Email: {user[2]}, Role: {user[3]}")
-        elif choice == '6':
-            transaction_id = input("Enter transaction ID: ")
-            book = transaction.get_book_by_transaction(transaction_id)
-            print(f"ID: {book[0]}, Title: {book[1]}, Author ID: {book[2]}, Category: {book[3]}, Available Copies: {book[4]}")
-        elif choice == '7':
-            break
-        else:
-            print("Invalid choice. Please try again.")
+def author_menu():
+    print("\nAuthor Management")
+    print("1. Create Author")
+    print("2. View All Authors")
+    print("3. Find Author by ID")
+    print("4. Delete Author")
+    print("5. Back to Main Menu")
 
-def manage_users():
-    user = User()
-    
+def transaction_menu():
+    print("\nTransaction Management")
+    print("1. Create Transaction")
+    print("2. View All Transactions")
+    print("3. Find Transaction by ID")
+    print("4. Delete Transaction")
+    print("5. Back to Main Menu")
+
+def handle_user_menu():
     while True:
-        print("\nManage Users")
-        print("1. Add User")
-        print("2. View All Users")
-        print("3. Update User")
-        print("4. Delete User")
-        print("5. View Transactions by User")
-        print("6. Back")
-        
-        choice = input("Enter choice: ")
-        
+        user_menu()
+        choice = input("Enter your choice: ")
         if choice == '1':
             name = input("Enter user name: ")
             email = input("Enter user email: ")
-            role = input("Enter user role: ")
-            user.add_user(name, email, role)
-            print("User added successfully.")
+            role = input("Enter user role (admin/patron): ")
+            user = User(name=name, email=email, role=role)
+            user.create()
+            print("User created successfully.")
         elif choice == '2':
-            users = user.get_all_users()
-            for u in users:
-                print(f"ID: {u[0]}, Name: {u[1]}, Email: {u[2]}, Role: {u[3]}")
+            users = User.get_all()
+            for user in users:
+                print(user)
         elif choice == '3':
-            user_id = input("Enter user ID: ")
-            name = input("Enter new name: ")
-            email = input("Enter new email: ")
-            role = input("Enter new role: ")
-            user.update_user(user_id, name, email, role)
-            print("User updated successfully.")
+            user_id = int(input("Enter user ID: "))
+            user = User.find_by_id(user_id)
+            if user:
+                print(user)
+            else:
+                print("User not found.")
         elif choice == '4':
-            user_id = input("Enter user ID: ")
-            user.delete_user(user_id)
+            user_id = int(input("Enter user ID to delete: "))
+            User.delete(user_id)
             print("User deleted successfully.")
         elif choice == '5':
-            user_id = input("Enter user ID: ")
-            transactions = user.get_transactions_by_user(user_id)
-            for t in transactions:
-                print(f"ID: {t[0]}, Book ID: {t[1]}, Borrow Date: {t[2]}, Due Date: {t[3]}, Return Date: {t[4]}, Fine: {t[5]}")
-        elif choice == '6':
             break
+        else:
+            print("Invalid choice. Please try again.")
+
+def handle_book_menu():
+    while True:
+        book_menu()
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            title = input("Enter book title: ")
+            author_id = int(input("Enter author ID: "))
+            category = input("Enter book category: ")
+            available_copies = int(input("Enter available copies: "))
+            book = Book(title=title, author_id=author_id, category=category, available_copies=available_copies)
+            book.create()
+            print("Book created successfully.")
+        elif choice == '2':
+            books = Book.get_all()
+            for book in books:
+                print(book)
+        elif choice == '3':
+            book_id = int(input("Enter book ID: "))
+            book = Book.find_by_id(book_id)
+            if book:
+                print(book)
+            else:
+                print("Book not found.")
+        elif choice == '4':
+            book_id = int(input("Enter book ID to delete: "))
+            Book.delete(book_id)
+            print("Book deleted successfully.")
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+def handle_author_menu():
+    while True:
+        author_menu()
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            name = input("Enter author name: ")
+            author = Author(name=name)
+            author.create()
+            print("Author created successfully.")
+        elif choice == '2':
+            authors = Author.get_all()
+            for author in authors:
+                print(author)
+        elif choice == '3':
+            author_id = int(input("Enter author ID: "))
+            author = Author.find_by_id(author_id)
+            if author:
+                print(author)
+            else:
+                print("Author not found.")
+        elif choice == '4':
+            author_id = int(input("Enter author ID to delete: "))
+            Author.delete(author_id)
+            print("Author deleted successfully.")
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+def handle_transaction_menu():
+    while True:
+        transaction_menu()
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            book_id = int(input("Enter book ID: "))
+            user_id = int(input("Enter user ID: "))
+            borrow_date = input("Enter borrow date (YYYY-MM-DD): ")
+            due_date = input("Enter due date (YYYY-MM-DD): ")
+            return_date = input("Enter return date (YYYY-MM-DD) (leave blank if not returned): ")
+            fine = float(input("Enter fine amount: "))
+            transaction = Transaction(
+                book_id=book_id,
+                user_id=user_id,
+                borrow_date=borrow_date,
+                due_date=due_date,
+                return_date=return_date if return_date else None,
+                fine=fine
+            )
+            transaction.create()
+            print("Transaction created successfully.")
+        elif choice == '2':
+            transactions = Transaction.get_all()
+            for transaction in transactions:
+                print(transaction)
+        elif choice == '3':
+            transaction_id = int(input("Enter transaction ID: "))
+            transaction = Transaction.find_by_id(transaction_id)
+            if transaction:
+                print(transaction)
+            else:
+                print("Transaction not found.")
+        elif choice == '4':
+            transaction_id = int(input("Enter transaction ID to delete: "))
+            Transaction.delete(transaction_id)
+            print("Transaction deleted successfully.")
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+def main():
+    setup_database()
+    while True:
+        main_menu()
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            handle_user_menu()
+        elif choice == '2':
+            handle_book_menu()
+        elif choice == '3':
+            handle_author_menu()
+        elif choice == '4':
+            handle_transaction_menu()
+        elif choice == '5':
+            print("Exiting the application.")
+            sys.exit()
         else:
             print("Invalid choice. Please try again.")
 
