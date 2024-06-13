@@ -1,5 +1,5 @@
 import sqlite3
-from connection import get_connection
+from database.connection import get_connection
 
 def setup_database():
     """

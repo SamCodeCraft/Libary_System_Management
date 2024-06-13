@@ -4,8 +4,8 @@ from models.user import User
 from models.book import Book
 from models.transaction import Transaction
 from models.author import Author
-from connection import get_db_connection
-from setup import setup_database
+from database.connection import get_connection
+from database.setup import setup_database
 
 class TestModels(unittest.TestCase):
 
@@ -16,7 +16,7 @@ class TestModels(unittest.TestCase):
 
     def setUp(self):
         # Clear the database before each test
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('DELETE FROM transactions')
         cursor.execute('DELETE FROM users')

@@ -1,5 +1,5 @@
 import sqlite3
-from connection import get_db_connection
+from database.connection import get_connection
 
 class Author:
     def __init__(self, id=None, name=None):
@@ -8,7 +8,7 @@ class Author:
 
     # Create a new author in the database
     def create(self):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute(
             'INSERT INTO authors (name) VALUES (?)',
@@ -21,7 +21,7 @@ class Author:
     # Get all authors from the database
     @classmethod
     def get_all(cls):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('SELECT id, name FROM authors')
         rows = cursor.fetchall()
@@ -31,7 +31,7 @@ class Author:
     # Find an author by ID
     @classmethod
     def find_by_id(cls, author_id):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('SELECT id, name FROM authors WHERE id = ?', (author_id,))
         row = cursor.fetchone()
@@ -43,7 +43,7 @@ class Author:
     # Delete an author from the database
     @classmethod
     def delete(cls, author_id):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('DELETE FROM authors WHERE id = ?', (author_id,))
         connection.commit()

@@ -1,5 +1,5 @@
 import sqlite3
-from connection import get_db_connection
+from database.connection import get_connection
 
 class User:
     def __init__(self, id=None, name=None, email=None, role=None):
@@ -10,7 +10,7 @@ class User:
 
     @classmethod
     def create_table(cls):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -24,7 +24,7 @@ class User:
         connection.close()
 
     def create(self):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('''
             INSERT INTO users (name, email, role) VALUES (?, ?, ?)
@@ -34,7 +34,7 @@ class User:
 
     @classmethod
     def get_all(cls):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM users')
         users = cursor.fetchall()
@@ -43,7 +43,7 @@ class User:
 
     @classmethod
     def find_by_id(cls, id):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM users WHERE id = ?', (id,))
         user = cursor.fetchone()
@@ -54,7 +54,7 @@ class User:
 
     @classmethod
     def delete(cls, id):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('DELETE FROM users WHERE id = ?', (id,))
         connection.commit()

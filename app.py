@@ -3,7 +3,7 @@ from models.user import User
 from models.book import Book
 from models.author import Author
 from models.transaction import Transaction
-from setup import setup_database
+from database.setup import setup_database
 
 def main_menu():
     print("\nLibrary Management System")

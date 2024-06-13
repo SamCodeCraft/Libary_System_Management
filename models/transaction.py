@@ -1,5 +1,5 @@
 import sqlite3
-from connection import get_db_connection
+from database.connection import get_connection
 
 class Transaction:
     def __init__(self, id=None, book_id=None, user_id=None, borrow_date=None, due_date=None, return_date=None, fine=None):
@@ -13,7 +13,7 @@ class Transaction:
 
     @classmethod
     def create_table(cls):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS transactions (
@@ -32,7 +32,7 @@ class Transaction:
         connection.close()
 
     def create(self):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('''
             INSERT INTO transactions (book_id, user_id, borrow_date, due_date, return_date, fine) VALUES (?, ?, ?, ?, ?, ?)
@@ -42,7 +42,7 @@ class Transaction:
 
     @classmethod
     def get_all(cls):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM transactions')
         transactions = cursor.fetchall()
@@ -51,7 +51,7 @@ class Transaction:
 
     @classmethod
     def find_by_id(cls, id):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM transactions WHERE id = ?', (id,))
         transaction = cursor.fetchone()
@@ -62,7 +62,7 @@ class Transaction:
 
     @classmethod
     def delete(cls, id):
-        connection = get_db_connection()
+        connection = get_connection()
         cursor = connection.cursor()
         cursor.execute('DELETE FROM transactions WHERE id = ?', (id,))
         connection.commit()
